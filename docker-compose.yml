@@ -1,0 +1,64 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: sync_mysql
+    env_file: .env
+    ports:
+      - 3306:3306
+    volumes:
+      - ../database/:/var/lib/mysql/
+    restart: always
+  
+  phpmyadmin:
+    depends_on:
+      - mysql
+    image: phpmyadmin:latest
+    environment: 
+      PMA_HOSTS: sync_mysql
+      UPLOAD_LIMIT: 1G
+    container_name: sync_phpmyadmin
+    restart: always
+    ports:
+      - 9000:80
+  
+  mongodb:
+    image: mongo:latest
+    container_name: sync_mongodb
+    env_file: .env
+    volumes:
+      - ../mongo_database:/data/db/
+    restart: always
+    ports:
+      - 27017:27017
+    logging:
+      driver: none
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: sync_mongo_express
+    env_file: .env
+    restart: always
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongodb
+    logging:
+      driver: none
+
+  sync_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    image: sync:latest
+    env_file: .env
+    container_name: sync_app
+    environment:
+      - NODE_ENV=local
+    depends_on:
+      - mongodb
+      - mysql
+    volumes:
+      - ./:/app/
+    restart: always
