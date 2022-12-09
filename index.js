@@ -6,7 +6,7 @@ const { MongoClient } = require("mongodb");
 dotenv.config();
 
 const mongoDBName = process.env.MONGODB_NAME;
-const mySqlDBName = process.env.MYSQL_DB_NAME;
+const mySqlDBName = process.env.MYSQL_DATABASE;
 
 const config = {
   mysql: {
